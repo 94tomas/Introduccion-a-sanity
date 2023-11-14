@@ -22,6 +22,7 @@
     </div>
 </template>
 <script>
+import config from '../data/config.js';
 import axios from 'axios';
 // Import Swiper Vue.js components
 import { Swiper, SwiperSlide } from 'swiper/vue';
@@ -41,6 +42,7 @@ export default {
     },
     data() {
         return {
+            config: config,
             modules: [EffectCards],
             dataSlide: [],
             show: false,
@@ -58,7 +60,7 @@ export default {
     },
     methods: {
         async getData() {
-            let PROJECT_ID = import.meta.env.PUBLIC_PROJECT_ID;
+            let PROJECT_ID = this.config.projectId;
             let DATASET = "production";
             let QUERY = encodeURIComponent('*[_type == "home"]');
 
