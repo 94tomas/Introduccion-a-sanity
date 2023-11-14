@@ -1,21 +1,28 @@
 <template>
-    <swiper
-        :effect="'cards'"
-        :grabCursor="true"
-        :modules="modules"
-        class="mySwiper"
-    >
-        <swiper-slide class="px-6 py-5">
-            <h2 class="text-4xl font-extrabold mb-5">¿Qué es SANITY?</h2>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus nihil iure atque harum doloribus, porro ad autem, error numquam minima quidem qui dolor, aut adipisci explicabo! Cupiditate labore impedit vero!</p>
-        </swiper-slide>
+    <div>
+        <div v-if="show">
+            <swiper
+                :effect="'cards'"
+                :grabCursor="true"
+                :modules="modules"
+                class="mySwiper"
+            >
 
-        <swiper-slide>
-            dsdsd
-        </swiper-slide>
-    </swiper>
+                <swiper-slide class="px-6 py-5" v-for="(slide, i) in dataSlide" :key="i">
+                    <h2 class="text-4xl font-extrabold mb-5">{{ slide.title }}</h2>
+                    <SanityBlocks :blocks="slide.description" :serializers="serializers" />
+                    <img v-if="slide.image?.asset?._ref" class="w-full max-w-2xl mx-auto" :src="`https://cdn.sanity.io/images/5ogj981v/production/${buildImage(slide.image?.asset?._ref)}`" alt="">
+                </swiper-slide>
+                
+            </swiper>
+        </div>
+        <div v-else>
+            <p>Cargando...</p>
+        </div>
+    </div>
 </template>
 <script>
+import axios from 'axios';
 // Import Swiper Vue.js components
 import { Swiper, SwiperSlide } from 'swiper/vue';
 // Import Swiper styles
@@ -23,54 +30,61 @@ import 'swiper/css';
 import 'swiper/css/effect-cards';
 // import required modules
 import { EffectCards } from 'swiper/modules';
+// sanityBlock
+import { SanityBlocks } from 'sanity-blocks-vue-component';
 
 export default {
     components: {
         Swiper,
         SwiperSlide,
+        SanityBlocks
     },
-    setup() {
+    data() {
         return {
             modules: [EffectCards],
+            dataSlide: [],
+            show: false,
+            serializers: {
+                types: {
+                    image: (data) => {
+                        return '<p>sd</p>'
+                    }
+                }
+            }
         };
     },
     mounted() {
-        let PROJECT_ID = "5ogj981v";
-        let DATASET = "production";
-        let QUERY = encodeURIComponent('*[_type == "home"]');
-
-        // Compose the URL for your project's endpoint and add the query
-        let URL = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
-        // fetch the content
-        fetch(URL)
-        .then((res) => res.json())
-        .then(({ result }) => {
-            console.log(result);
-            // get the list element, and the first item
-            // let list = document.querySelector("ul");
-            // let firstListItem = document.querySelector("ul li");
-
-            // if (result.length > 0) {
-            //     // remove the placeholder content
-            //     list.removeChild(firstListItem);
-
-            //     result.forEach((pet) => {
-            //     // create a list element for each pet
-            //     let listItem = document.createElement("li");
-
-            //     // add the pet name as the text content
-            //     listItem.textContent = pet?.name;
-
-            //     // add the item to the list
-            //     list.appendChild(listItem);
-            //     });
-            //     let pre = document.querySelector("pre");
-            //     // add the raw data to the preformatted element
-            //     pre.textContent = JSON.stringify(result, null, 2);
-            // }
-        })
-        .catch((err) => console.error(err));
+        this.getData()
     },
+    methods: {
+        async getData() {
+            let PROJECT_ID = "5ogj981v";
+            let DATASET = "production";
+            let QUERY = encodeURIComponent('*[_type == "home"]');
+
+            await axios.get(`https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`)
+            .then((response) => {
+                this.dataSlide = response.data.result[0].sliders
+                console.log(this.dataSlide);
+                this.show = true
+            })
+            .catch((error) => {
+                console.log(error);
+                alert('Error al cargar los datos')
+            })
+        },
+        buildImage(inputString) {
+            // Usar una expresión regular para extraer la parte relevante del string
+            let match = inputString.match(/image-(\w+)-(\d+x\d+)-(\w+)/)
+            let fileName = ''
+            if (match) {
+                // Construir el nuevo nombre de archivo utilizando las partes capturadas
+                fileName = match[1] + "-" + match[2] + "." + match[3]
+            }
+
+            return fileName;
+        }
+    }
 };
 </script>
 <style>
@@ -84,7 +98,7 @@ export default {
 
 .swiper {
   width: 100%;
-  height: calc(100vh - 300px);
+  height: calc(100vh - 150px);
 }
 
 .swiper-slide {
@@ -93,8 +107,15 @@ export default {
     background-color: #f0f0f0;
 }
 
-/* .swiper-slide:nth-child(1n) {
-  background-color: #f0f0f0;
-}*/
+p {
+    margin-bottom: 20px;
+}
+ul {
+    list-style-type: disc;
+    padding-left: 20px;
+}
+ul li {
+    margin-bottom: 10px;
+}
 </style>
   
