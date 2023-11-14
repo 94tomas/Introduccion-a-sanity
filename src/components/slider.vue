@@ -58,7 +58,7 @@ export default {
     },
     methods: {
         async getData() {
-            let PROJECT_ID = "5ogj981v";
+            let PROJECT_ID = import.meta.env.PUBLIC_PROJECT_ID;
             let DATASET = "production";
             let QUERY = encodeURIComponent('*[_type == "home"]');
 
