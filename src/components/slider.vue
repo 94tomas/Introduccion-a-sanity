@@ -107,6 +107,9 @@ export default {
     border-radius: 18px;
     color: #000;
     background-color: #f0f0f0;
+    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
 }
 
 p {
